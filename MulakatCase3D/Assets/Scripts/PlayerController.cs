@@ -6,20 +6,28 @@ using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour , ICanMove
 {
+    private Rigidbody playerRigidbody;
+
     [Header("Move Speed of the Player ")]
     [SerializeField] private float moveSpeed = 7f;
 
     [Header("Player Play Area")]
     [SerializeField] private float xBound = 2f;
-    [SerializeField] private float yBound = 4f;
+    [SerializeField] private float zBound = 4f;
 
     [Header("Jump Details")]
-    [SerializeField] private float airTime = 1.5f;
+
+    [SerializeField] private float airTime = 1f;
+    [SerializeField] private float jumpForce = 8f;
     [SerializeField] private GameObject wings;
-    [SerializeField] private float wingsCooldown = 0.5f;
-    [SerializeField] private bool isGround;
+    [SerializeField] private float wingsCooldown = 0.25f;
+    [SerializeField] private bool isGround = true;
     [SerializeField] private UnityEvent<bool> flying;
 
+    private void Awake()
+    {
+        playerRigidbody = GetComponent<Rigidbody>();
+    }
 
 
     private void Update()
@@ -33,9 +41,9 @@ public class PlayerController : MonoBehaviour , ICanMove
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGround)
         {
-            flying.Invoke(true);
+            playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGround = false;
-            wings.gameObject.SetActive(true);
+            //wings.gameObject.SetActive(true);
             StartCoroutine(AirTimeCountdownRoutine());
         }
     }
@@ -49,7 +57,7 @@ public class PlayerController : MonoBehaviour , ICanMove
     {
         //WingsDisplay();
         yield return new WaitForSeconds(airTime);
-        wings.gameObject.SetActive(false);
+        //wings.gameObject.SetActive(false);
         isGround = false;
         flying.Invoke(false);
         yield return new WaitForSeconds(wingsCooldown);
@@ -71,10 +79,10 @@ public class PlayerController : MonoBehaviour , ICanMove
         if (transform.position.x <= -xBound)
             transform.position = new Vector3(-xBound, transform.position.y, transform.position.z);
 
-        if (transform.position.y >= yBound)
-            transform.position = new Vector3(transform.position.x, yBound, transform.position.z);
-        if (transform.position.y <= -yBound)
-            transform.position = new Vector3(transform.position.x, -yBound, transform.position.z);
+        if (transform.position.z >= zBound)
+            transform.position = new Vector3(transform.position.x, transform.position.y, zBound);
+        if (transform.position.z <= -zBound)
+            transform.position = new Vector3(transform.position.x, transform.position.y, -zBound);
 
 
 
@@ -84,15 +92,15 @@ public class PlayerController : MonoBehaviour , ICanMove
     private Vector3 CalculateMovement()
     {
         float moveX = 0f;
-        float moveY = 0f;
+        float moveZ = 0f;
 
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
-            moveY = +1f;
+            moveZ = +1f;
         }
         if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
         {
-            moveY = -1f;
+            moveZ = -1f;
         }
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
@@ -103,7 +111,7 @@ public class PlayerController : MonoBehaviour , ICanMove
             moveX = -1f;
         }
 
-        return new Vector3(moveX, moveY).normalized;
+        return new Vector3(moveX, 0, moveZ).normalized;
     }
 
     public void SetSpeed(float newSpeed)
@@ -115,14 +123,12 @@ public class PlayerController : MonoBehaviour , ICanMove
     {
         return moveSpeed;
     }
-
-    private void OnTriggerEnter2D(Collider2D collider)
+ 
+    private void OnTriggerEnter(Collider other)
     {
-        
-        if (collider.gameObject.CompareTag("Point"))
+        if (other.gameObject.CompareTag("Point"))
         {
             GameManager.Instance.UpdateScore();
-            Destroy(collider.gameObject);
             Debug.Log("Collided");
 
         }
