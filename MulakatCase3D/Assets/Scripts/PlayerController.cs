@@ -7,6 +7,11 @@ using UnityEngine.Events;
 public class PlayerController : MonoBehaviour , ICanMove
 {
     private Rigidbody playerRigidbody;
+    
+    [Header("Animations")]
+    [SerializeField] Animator playerAnimator;
+    [SerializeField] int isWalkingHash;
+    [SerializeField] int isFlyingHash;
 
     [Header("Move Speed of the Player ")]
     [SerializeField] private float moveSpeed = 7f;
@@ -26,6 +31,7 @@ public class PlayerController : MonoBehaviour , ICanMove
 
     private void Awake()
     {
+        playerAnimator = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
     }
 
@@ -41,6 +47,7 @@ public class PlayerController : MonoBehaviour , ICanMove
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGround)
         {
+            playerAnimator.SetBool("isFlying", true);
             playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGround = false;
             //wings.gameObject.SetActive(true);
@@ -57,11 +64,13 @@ public class PlayerController : MonoBehaviour , ICanMove
     {
         //WingsDisplay();
         yield return new WaitForSeconds(airTime);
+        playerAnimator.SetBool("isFlying", false);
         //wings.gameObject.SetActive(false);
         isGround = false;
         flying.Invoke(false);
         yield return new WaitForSeconds(wingsCooldown);
         isGround = true;
+        
     }
 
     private void KeyboardMovement(Vector3 moveDir)
@@ -96,19 +105,27 @@ public class PlayerController : MonoBehaviour , ICanMove
 
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
         {
+            playerAnimator.SetBool("isWalking", true);
             moveZ = +1f;
         }
         if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
         {
+            playerAnimator.SetBool("isWalking", true);
             moveZ = -1f;
         }
         if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
         {
+            playerAnimator.SetBool("isWalking", true);
             moveX = +1f;
         }
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
         {
+            playerAnimator.SetBool("isWalking", true);
             moveX = -1f;
+        }
+        if(moveX  == 0 && moveZ == 0)
+        {
+            playerAnimator.SetBool("isWalking", false);
         }
 
         return new Vector3(moveX, 0, moveZ).normalized;
