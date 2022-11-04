@@ -19,18 +19,11 @@ public class PlayerController : MonoBehaviour , ICanMove
     [SerializeField] private float turnSmoothVelocity;
     [SerializeField] private Vector3 velocity;
 
-    [Header("Player Play Area")]
-    [SerializeField] private float xBound = 2f;
-    [SerializeField] private float zBound = 4f;
+    
 
-    [Header("Jump Details")]
-
-    [SerializeField] private float airTime = 1f;
+    [Header("Jump Details")] 
     [SerializeField] private float jumpForce = 3f;
-    [SerializeField] private GameObject wings;
-    [SerializeField] private float wingsCooldown = 0.25f;
     [SerializeField] private bool isGround = true;
-    [SerializeField] private UnityEvent<bool> flying;
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundDistance = 0.4f;
@@ -48,9 +41,9 @@ public class PlayerController : MonoBehaviour , ICanMove
 
     private void Update()
     {
-        //KeyboardMovement(CalculateMovement());
+         
         Movement();
-        //Fly();
+         
     }
 
     public void Movement()
@@ -92,6 +85,8 @@ public class PlayerController : MonoBehaviour , ICanMove
         }
             
     }
+
+     
 
     public void SetSpeed(float newSpeed)
     {
