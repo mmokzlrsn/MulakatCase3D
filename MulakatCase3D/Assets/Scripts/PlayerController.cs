@@ -10,11 +10,14 @@ public class PlayerController : MonoBehaviour , ICanMove
     
     [Header("Animations")]
     [SerializeField] Animator playerAnimator;
-    [SerializeField] int isWalkingHash;
-    [SerializeField] int isFlyingHash;
 
-    [Header("Move Speed of the Player ")]
+
+    [Header("Movement of the Player ")]
+    [SerializeField] private CharacterController controller;
     [SerializeField] private float moveSpeed = 7f;
+    [SerializeField] private float turnSmoothTime = 0.1f;
+    [SerializeField] private float turnSmoothVelocity;
+    [SerializeField] private Vector3 velocity;
 
     [Header("Player Play Area")]
     [SerializeField] private float xBound = 2f;
@@ -23,11 +26,18 @@ public class PlayerController : MonoBehaviour , ICanMove
     [Header("Jump Details")]
 
     [SerializeField] private float airTime = 1f;
-    [SerializeField] private float jumpForce = 8f;
+    [SerializeField] private float jumpForce = 3f;
     [SerializeField] private GameObject wings;
     [SerializeField] private float wingsCooldown = 0.25f;
     [SerializeField] private bool isGround = true;
     [SerializeField] private UnityEvent<bool> flying;
+    [SerializeField] private float gravity = -9.81f;
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private float groundDistance = 0.4f;
+    [SerializeField] private LayerMask groundMask;
+
+
+
 
     private void Awake()
     {
@@ -38,97 +48,49 @@ public class PlayerController : MonoBehaviour , ICanMove
 
     private void Update()
     {
-        KeyboardMovement(CalculateMovement());
-        Fly();
-        
+        //KeyboardMovement(CalculateMovement());
+        Movement();
+        //Fly();
     }
 
-    public void Fly()
+    public void Movement()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && isGround)
+        //jump
+
+        isGround = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if (isGround && velocity.y < 0)
         {
-            playerAnimator.SetBool("isFlying", true);
-            playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGround = false;
-            //wings.gameObject.SetActive(true);
-            StartCoroutine(AirTimeCountdownRoutine());
-        }
-    }
-
-    public void WingsDisplay()
-    {
-        wings.transform.position = new Vector3 (transform.position.x, transform.position.y + 0.5f, transform.position.z);
-    }
-
-    IEnumerator AirTimeCountdownRoutine()
-    {
-        //WingsDisplay();
-        yield return new WaitForSeconds(airTime);
-        playerAnimator.SetBool("isFlying", false);
-        //wings.gameObject.SetActive(false);
-        isGround = false;
-        flying.Invoke(false);
-        yield return new WaitForSeconds(wingsCooldown);
-        isGround = true;
-        
-    }
-
-    private void KeyboardMovement(Vector3 moveDir)
-    {
-        
-
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
-        PlayerPosition();
-    }
-
-    private void PlayerPosition()
-    {
-        if (transform.position.x >= xBound)
-            transform.position = new Vector3(xBound, transform.position.y, transform.position.z);
-        if (transform.position.x <= -xBound)
-            transform.position = new Vector3(-xBound, transform.position.y, transform.position.z);
-
-        if (transform.position.z >= zBound)
-            transform.position = new Vector3(transform.position.x, transform.position.y, zBound);
-        if (transform.position.z <= -zBound)
-            transform.position = new Vector3(transform.position.x, transform.position.y, -zBound);
-
-
-
-    }
-   
-
-    private Vector3 CalculateMovement()
-    {
-        float moveX = 0f;
-        float moveZ = 0f;
-
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-        {
-            playerAnimator.SetBool("isWalking", true);
-            moveZ = +1f;
-        }
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-        {
-            playerAnimator.SetBool("isWalking", true);
-            moveZ = -1f;
-        }
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-        {
-            playerAnimator.SetBool("isWalking", true);
-            moveX = +1f;
-        }
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-        {
-            playerAnimator.SetBool("isWalking", true);
-            moveX = -1f;
-        }
-        if(moveX  == 0 && moveZ == 0)
-        {
-            playerAnimator.SetBool("isWalking", false);
+            velocity.y = -2f;
         }
 
-        return new Vector3(moveX, 0, moveZ).normalized;
+        if (Input.GetButtonDown("Jump") && isGround)
+        {
+            velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
+        }
+
+        //gravity formula
+
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+
+        //walk
+
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+
+        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (direction.magnitude >= 0.1f)
+        {
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
+        }
+            
     }
 
     public void SetSpeed(float newSpeed)
