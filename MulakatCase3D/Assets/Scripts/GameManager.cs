@@ -6,7 +6,7 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    public static GameManager Instance { get; private set; } //singleton
      
     [Header("Audio")]
     [SerializeField] private UnityEvent<AudioClip> ScoreSound;
@@ -19,8 +19,6 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-
-
         // If there is an instance, and it's not me, delete myself.
 
         if (Instance != null && Instance != this)
@@ -33,18 +31,7 @@ public class GameManager : MonoBehaviour
         }
 
     }
-
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
+ 
     public void UpdateScore()
     {
         score++;
@@ -56,9 +43,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Audio is played");
         ScoreSound.Invoke(clip);
-    }
-
-     
+    } 
 
     public bool CheckHighScore()
     {
