@@ -20,7 +20,6 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         // If there is an instance, and it's not me, delete myself.
-
         if (Instance != null && Instance != this)
         {
             Destroy(this);
@@ -29,14 +28,12 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
         }
-
     }
  
     public void UpdateScore()
     {
         score++;
         ScoreChanged.Invoke(score);
-        
     }
 
     public void PlayScoreSound(AudioClip clip)

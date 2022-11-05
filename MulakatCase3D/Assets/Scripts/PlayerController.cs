@@ -6,8 +6,6 @@ using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour , ICanMove
 {
-    private Rigidbody playerRigidbody;
-    
     [Header("Animations")]
     [SerializeField] Animator playerAnimator;
 
@@ -35,7 +33,6 @@ public class PlayerController : MonoBehaviour , ICanMove
     private void Awake()
     {
         playerAnimator = GetComponent<Animator>();
-        playerRigidbody = GetComponent<Rigidbody>();
     }
 
 
@@ -49,16 +46,18 @@ public class PlayerController : MonoBehaviour , ICanMove
     public void Movement()
     {
         //jump
-
         isGround = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
         if (isGround && velocity.y < 0)
         {
             velocity.y = -2f;
+            playerAnimator.SetBool("Fly", false);
+
         }
 
         if (Input.GetButtonDown("Jump") && isGround)
         {
+            playerAnimator.SetBool("Fly", true);
             velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
         }
 
@@ -76,6 +75,7 @@ public class PlayerController : MonoBehaviour , ICanMove
 
         if (direction.magnitude >= 0.1f)
         {
+            playerAnimator.SetBool("Run", true);
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
@@ -83,10 +83,16 @@ public class PlayerController : MonoBehaviour , ICanMove
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
             controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
         }
-            
+        else
+        {
+            playerAnimator.SetBool("Run", false);
+
+        }
+
+
     }
 
-     
+
 
     public void SetSpeed(float newSpeed)
     {
