@@ -58,6 +58,7 @@ public class PlayerController : MonoBehaviour , ICanMove
         if (Input.GetButtonDown("Jump") && isGround)
         {
             playerAnimator.SetBool("Fly", true);
+            playerAnimator.SetBool("Run", false);
             velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
         }
 
