@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour , ICanMove
 
     [Header("Movement of the Player ")]
     [SerializeField] private CharacterController controller;
+    [SerializeField] private FixedJoystick joystick;
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float turnSmoothTime = 0.1f;
     [SerializeField] private float turnSmoothVelocity;
@@ -43,6 +44,18 @@ public class PlayerController : MonoBehaviour , ICanMove
          
     }
 
+    
+
+    public void Jump()
+    {
+        if (isGround)
+        {
+            playerAnimator.SetBool("Fly", true);
+            playerAnimator.SetBool("Run", false);
+            velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
+        }
+    }
+
     public void Movement()
     {
         //jump
@@ -55,11 +68,9 @@ public class PlayerController : MonoBehaviour , ICanMove
 
         }
 
-        if (Input.GetButtonDown("Jump") && isGround)
+        if (Input.GetButtonDown("Jump"))
         {
-            playerAnimator.SetBool("Fly", true);
-            playerAnimator.SetBool("Run", false);
-            velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
+            Jump();
         }
 
         //gravity formula
@@ -69,6 +80,15 @@ public class PlayerController : MonoBehaviour , ICanMove
 
         //walk
 
+        KeyboardMovement();
+        JoystickMovement();
+
+
+
+    }
+
+    public void KeyboardMovement()
+    {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
@@ -89,11 +109,29 @@ public class PlayerController : MonoBehaviour , ICanMove
             playerAnimator.SetBool("Run", false);
 
         }
-
-
     }
 
+    public void JoystickMovement()
+    {
+        Vector3 direction = new Vector3(joystick.Horizontal, 0f, joystick.Vertical).normalized;
 
+        if (direction.magnitude >= 0.1f)
+        {
+            playerAnimator.SetBool("Run", true);
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
+        }
+        else
+        {
+            playerAnimator.SetBool("Run", false);
+
+        }
+
+    }
 
     public void SetSpeed(float newSpeed)
     {
