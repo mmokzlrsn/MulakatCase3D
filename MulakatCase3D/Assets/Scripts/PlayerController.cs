@@ -29,8 +29,6 @@ public class PlayerController : MonoBehaviour , ICanMove
     [SerializeField] private LayerMask groundMask;
 
 
-
-
     private void Awake()
     {
         playerAnimator = GetComponent<Animator>();
@@ -43,9 +41,7 @@ public class PlayerController : MonoBehaviour , ICanMove
         Movement();
          
     }
-
-    
-
+     
     public void Jump()
     {
         if (isGround)
@@ -81,7 +77,7 @@ public class PlayerController : MonoBehaviour , ICanMove
         //walk
 
         KeyboardMovement();
-        JoystickMovement();
+        //JoystickMovement();
 
 
 

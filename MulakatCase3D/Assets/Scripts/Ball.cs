@@ -39,8 +39,4 @@ public class Ball : MonoBehaviour , ICanMove
         return moveSpeed;
     }
 
-
-
-
-
 }

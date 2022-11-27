@@ -32,10 +32,8 @@ public class FollowBall : MonoBehaviour
     {
         playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsBall);
      
-
         if (!playerInSightRange) Patroling();
         if (playerInSightRange) ChaseBall();
-        
     }
 
     private void Patroling()
@@ -51,7 +49,6 @@ public class FollowBall : MonoBehaviour
         //Walkpoint reached
         if (distanceToWalkPoint.magnitude < 1f)
             walkPointSet = false;
-
     }
 
     private void SearchWalkPoint()
@@ -64,7 +61,6 @@ public class FollowBall : MonoBehaviour
         if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround))
             walkPointSet = true;
     }
-
 
     private void ChaseBall()
     {
